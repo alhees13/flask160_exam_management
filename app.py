@@ -14,12 +14,6 @@ Session(app)
 
 db = SQL ( "sqlite:///school.db" )
 
-admin_username = "admin"
-admin_password = generate_password_hash("adminpassword", method='pbkdf2:sha256', salt_length=8)
-admin_role = "admin"
-
-db.execute("INSERT INTO User (username, password, role) VALUES (?, ?, ?)", admin_username, admin_password, admin_role)
-
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
