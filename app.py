@@ -310,7 +310,7 @@ def grade_individual_test(test_id, student_id):
 
     grade = db.execute("SELECT grade FROM Grade WHERE student_id = ? AND test_id = ?", student_id, test_id)
 
-    return render_template('grade_individual_test.html', test=test, student=student, responses=responses, grade=grade[0]['grade'] if grade else None)
+    return render_template('grade_individual_test.html', test=test, student=student, student_id=student_id, responses=responses, grade=grade[0]['grade'] if grade else None)
 
 
 
