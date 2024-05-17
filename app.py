@@ -42,7 +42,7 @@ def register():
         username = request.form['username']
         password = request.form['password']
         role = request.form['role']  # Get role from form
-        hashed_password = generate_password_hash(password, method='sha256')
+        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
         db.execute("INSERT INTO User (username, password, role) VALUES (?, ?, ?)", username, hashed_password, role)
         flash('Registration successful!', 'success')
         return redirect(url_for('login'))
