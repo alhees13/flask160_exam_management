@@ -1,9 +1,8 @@
 from flask_session import Session
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from cs50 import SQL
-
 
 app = Flask(__name__)
 
@@ -11,7 +10,7 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
-db = SQL ( "sqlite:///school.db" )
+db = SQL("sqlite:///school.db")
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
@@ -24,19 +23,6 @@ class User(UserMixin):
         self.password = password
         self.role = role
 
-@login_manager.user_loader
-def load_user(user_id):
-    user = db.execute("SELECT * FROM User WHERE id = ?", user_id)
-    if user:
-        return User(id=user[0]['id'], username=user[0]['username'], password=user[0]['password'], role=user[0]['role'])
-    return None
-
-class User(UserMixin):
-    def __init__(self, id, username, password, role):
-        self.id = id
-        self.username = username
-        self.password = password
-        self.role = role
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -46,22 +32,23 @@ def load_user(user_id):
     return None
 
 
-# Routesssss
 @app.route('/')
 def home():
     return render_template('index.html')
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        role = request.form['role']  # Get role from form
+        role = request.form['role']
         hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
         db.execute("INSERT INTO User (username, password, role) VALUES (?, ?, ?)", username, hashed_password, role)
         flash('Registration successful!', 'success')
         return redirect(url_for('login'))
     return render_template('register.html')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -74,6 +61,7 @@ def login():
             return redirect(url_for('home'))
         flash('Login unsuccessful. Please check your username and password.', 'danger')
     return render_template('login.html')
+
 
 @app.route('/create_test', methods=['GET', 'POST'])
 @login_required
@@ -90,11 +78,13 @@ def create_test():
         return redirect(url_for('manage_tests'))
     return render_template('create_test.html')
 
+
 @app.route('/manage_tests')
 @login_required
 def manage_tests():
     tests = db.execute("SELECT * FROM Test WHERE teacher_id = ?", current_user.id)
     return render_template('manage_tests.html', tests=tests)
+
 
 @app.route('/test/<int:test_id>/questions', methods=['GET', 'POST'])
 @login_required
@@ -112,6 +102,7 @@ def manage_questions(test_id):
         return redirect(url_for('manage_questions', test_id=test_id))
     return render_template('manage_questions.html', test=test, questions=questions)
 
+
 @app.route('/delete_question/<int:question_id>', methods=['POST'])
 @login_required
 def delete_question(question_id):
@@ -125,9 +116,11 @@ def delete_question(question_id):
     return redirect(url_for('manage_questions', test_id=test['id']))
 
 
-
-
-
+@app.route('/tests', methods=['GET'])
+@login_required
+def get_tests():
+    tests = db.execute("SELECT * FROM Test")
+    return jsonify(tests)
 
 
 @app.route('/logout')
@@ -136,6 +129,5 @@ def logout():
     logout_user()
     return redirect(url_for('home'))
 
+
 if __name__ == '__main__':
-    app.run(debug=True)
-    
