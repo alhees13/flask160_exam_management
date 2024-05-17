@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from cs50 import SQL
+from datetime import datetime
 
 
 app = Flask(__name__)
@@ -178,10 +179,11 @@ def take_specific_test(test_id):
     test = db.execute("SELECT * FROM Test WHERE id = ?", test_id)[0]
     questions = db.execute("SELECT * FROM Question WHERE test_id = ?", test_id)
     if request.method == 'POST':
+        submission_time = datetime.now()
         for question in questions:
             answer_text = request.form.get(f'question_{question["id"]}')
-            db.execute("INSERT INTO Answer (student_id, test_id, question_id, answer_text) VALUES (?, ?, ?, ?)",
-                       current_user.id, test_id, question['id'], answer_text)
+            db.execute("INSERT INTO Answer (student_id, test_id, question_id, answer_text, submission_time) VALUES (?, ?, ?, ?, ?)",
+                       current_user.id, test_id, question['id'], answer_text, submission_time)
         flash('Test submitted successfully!', 'success')
         return redirect(url_for('take_test'))
     return render_template('take_specific_test.html', test=test, questions=questions)
@@ -192,7 +194,11 @@ def view_results():
     if current_user.role != 'student':
         flash('Only students can view results.', 'danger')
         return redirect(url_for('home'))
-    results = db.execute("SELECT * FROM Answer WHERE student_id = ?", current_user.id)
+    results = db.execute("SELECT Test.test_name, Answer.question_id, Answer.answer_text, Grade.grade "
+                         "FROM Answer "
+                         "LEFT JOIN Test ON Answer.test_id = Test.id "
+                         "LEFT JOIN Grade ON Answer.test_id = Grade.test_id AND Answer.student_id = Grade.student_id "
+                         "WHERE Answer.student_id = ?", current_user.id)
     return render_template('view_results.html', results=results)
 
 @app.route('/test/<int:test_id>/responses')
@@ -202,7 +208,10 @@ def view_test_responses(test_id):
         flash('Only teachers can view test responses.', 'danger')
         return redirect(url_for('home'))
     test = db.execute("SELECT * FROM Test WHERE id = ?", test_id)[0]
-    responses = db.execute("SELECT * FROM Answer WHERE test_id = ?", test_id)
+    responses = db.execute("SELECT Answer.student_id, Answer.question_id, Answer.answer_text, User.username "
+                           "FROM Answer "
+                           "LEFT JOIN User ON Answer.student_id = User.id "
+                           "WHERE Answer.test_id = ?", test_id)
     return render_template('view_test_responses.html', test=test, responses=responses)
 
 @app.route('/test/<int:test_id>/grade', methods=['GET', 'POST'])
@@ -212,7 +221,10 @@ def grade_test(test_id):
         flash('Only teachers can grade tests.', 'danger')
         return redirect(url_for('home'))
     test = db.execute("SELECT * FROM Test WHERE id = ?", test_id)[0]
-    students = db.execute("SELECT DISTINCT student_id FROM Answer WHERE test_id = ?", test_id)
+    students = db.execute("SELECT DISTINCT student_id, User.username "
+                          "FROM Answer "
+                          "LEFT JOIN User ON Answer.student_id = User.id "
+                          "WHERE Answer.test_id = ?", test_id)
     if request.method == 'POST':
         for student in students:
             grade = request.form.get(f'grade_{student["student_id"]}')
@@ -230,14 +242,26 @@ def grade_test(test_id):
 @app.route('/tests')
 @login_required
 def view_all_tests():
-    tests = db.execute("SELECT Test.id, Test.test_name, Test.test_description, User.username AS teacher_name, COUNT(DISTINCT Answer.student_id) AS student_count FROM Test LEFT JOIN User ON Test.teacher_id = User.id LEFT JOIN Answer ON Test.id = Answer.test_id GROUP BY Test.id")
+    tests = db.execute("SELECT Test.id, Test.test_name, Test.test_description, User.username AS teacher_name, COUNT(DISTINCT Answer.student_id) AS student_count "
+                       "FROM Test "
+                       "LEFT JOIN User ON Test.teacher_id = User.id "
+                       "LEFT JOIN Answer ON Test.id = Answer.test_id "
+                       "GROUP BY Test.id")
     return render_template('view_all_tests.html', tests=tests)
 
 @app.route('/test/<int:test_id>/details')
 @login_required
 def view_test_details(test_id):
-    test = db.execute("SELECT Test.id, Test.test_name, Test.test_description, User.username AS teacher_name FROM Test LEFT JOIN User ON Test.teacher_id = User.id WHERE Test.id = ?", test_id)[0]
-    students = db.execute("SELECT Answer.student_id, User.username AS student_name, Grade.grade, Grader.username AS grader_name FROM Answer LEFT JOIN User ON Answer.student_id = User.id LEFT JOIN Grade ON Answer.student_id = Grade.student_id AND Answer.test_id = Grade.test_id LEFT JOIN User AS Grader ON Grade.graded_by = Grader.id WHERE Answer.test_id = ?", test_id)
+    test = db.execute("SELECT Test.id, Test.test_name, Test.test_description, User.username AS teacher_name "
+                      "FROM Test "
+                      "LEFT JOIN User ON Test.teacher_id = User.id "
+                      "WHERE Test.id = ?", test_id)[0]
+    students = db.execute("SELECT Answer.student_id, User.username AS student_name, Grade.grade, Grader.username AS grader_name "
+                          "FROM Answer "
+                          "LEFT JOIN User ON Answer.student_id = User.id "
+                          "LEFT JOIN Grade ON Answer.student_id = Grade.student_id AND Answer.test_id = Grade.test_id "
+                          "LEFT JOIN User AS Grader ON Grade.graded_by = Grader.id "
+                          "WHERE Answer.test_id = ?", test_id)
     return render_template('view_test_details.html', test=test, students=students)
 
 

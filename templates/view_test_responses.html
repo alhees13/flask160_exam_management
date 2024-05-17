@@ -6,11 +6,12 @@
     <ul class="list-group">
         {% for response in responses %}
         <li class="list-group-item">
-            <h5>Student ID: {{ response.student_id }}</h5>
+            <h5>Student: {{ response.username }} (ID: {{ response.student_id }})</h5>
             <p>Question ID: {{ response.question_id }}</p>
             <p>Answer: {{ response.answer_text }}</p>
         </li>
         {% endfor %}
     </ul>
+    <a href="/test/{{ test.id }}/grade" class="btn btn-primary mt-4">Grade Test</a>
 </div>
 {% endblock %}

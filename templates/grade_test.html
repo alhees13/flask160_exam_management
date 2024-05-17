@@ -6,7 +6,7 @@
     <form action="/test/{{ test.id }}/grade" method="post">
         {% for student in students %}
         <div class="form-group">
-            <label for="grade_{{ student.student_id }}">Grade for Student ID: {{ student.student_id }}</label>
+            <label for="grade_{{ student.student_id }}">Grade for {{ student.username }} (ID: {{ student.student_id }})</label>
             <input type="number" class="form-control" id="grade_{{ student.student_id }}" name="grade_{{ student.student_id }}" required>
         </div>
         {% endfor %}
