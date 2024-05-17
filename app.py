@@ -286,6 +286,34 @@ def grade_test(test_id):
         return redirect(url_for('view_test_responses', test_id=test_id))
     return render_template('grade_test.html', test=test, students=students)
 
+
+@app.route('/test/<int:test_id>/grade/<int:student_id>', methods=['GET', 'POST'])
+@login_required
+def grade_individual_test(test_id, student_id):
+    if current_user.role != 'teacher':
+        flash('Only teachers can grade tests.', 'danger')
+        return redirect(url_for('home'))
+
+    test = db.execute("SELECT * FROM Test WHERE id = ?", test_id)[0]
+    student = db.execute("SELECT username FROM User WHERE id = ?", student_id)[0]
+    responses = db.execute("SELECT Answer.question_id, Answer.answer_text FROM Answer WHERE Answer.student_id = ? AND Answer.test_id = ?", student_id, test_id)
+
+    if request.method == 'POST':
+        grade = request.form.get('grade')
+        existing_grade = db.execute("SELECT * FROM Grade WHERE test_id = ? AND student_id = ?", test_id, student_id)
+        if existing_grade:
+            db.execute("UPDATE Grade SET grade = ? WHERE test_id = ? AND student_id = ?", grade, test_id, student_id)
+        else:
+            db.execute("INSERT INTO Grade (student_id, test_id, grade, graded_by) VALUES (?, ?, ?, ?)", student_id, test_id, grade, current_user.id)
+        flash('Grade saved successfully!', 'success')
+        return redirect(url_for('view_test_responses', test_id=test_id))
+
+    grade = db.execute("SELECT grade FROM Grade WHERE student_id = ? AND test_id = ?", student_id, test_id)
+
+    return render_template('grade_individual_test.html', test=test, student=student, responses=responses, grade=grade[0]['grade'] if grade else None)
+
+
+
 @app.route('/tests')
 @login_required
 def view_all_tests():

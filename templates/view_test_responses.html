@@ -14,7 +14,7 @@
                     </a>
                 </div>
                 <div>
-                    <a href="/test/{{ test.id }}/grade" class="btn btn-primary">Grade Test</a>
+                    <a href="{{ url_for('grade_individual_test', test_id=test.id, student_id=student.student_id) }}" class="btn btn-primary">Grade Test</a>
                 </div>
             </div>
         </li>

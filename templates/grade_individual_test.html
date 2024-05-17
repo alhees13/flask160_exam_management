@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Grade Test for {{ student.username }} in {{ test.test_name }}</h2>
+    <ul class="list-group">
+        {% for response in responses %}
+        <li class="list-group-item">
+            <p><strong>Question ID:</strong> {{ response.question_id }}</p>
+            <p><strong>Answer:</strong> {{ response.answer_text }}</p>
+        </li>
+        {% endfor %}
+        <li class="list-group-item">
+            <form action="{{ url_for('grade_individual_test', test_id=test.id, student_id=student_id) }}" method="post">
+                <div class="form-group">
+                    <label for="grade">Grade:</label>
+                    <input type="number" class="form-control" id="grade" name="grade" value="{{ grade }}" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Grade</button>
+            </form>
+        </li>
+    </ul>
+    <a href="{{ url_for('view_test_responses', test_id=test.id) }}" class="btn btn-secondary mt-4">Back to Test Responses</a>
+</div>
+{% endblock %}
