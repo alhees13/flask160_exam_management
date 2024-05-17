@@ -4,12 +4,12 @@
 <div class="container mt-4">
     <h2>Responses for {{ test.test_name }}</h2>
     <ul class="list-group">
-        {% for student in students %}
+        {% for response in responses %}
         <li class="list-group-item">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex justify-content-between">
                 <div>
-                    <h5>Student: {{ student.username }} (ID: {{ student.student_id }})</h5>
-                    <button class="btn btn-info" type="button" data-toggle="collapse" data-target="#collapse_{{ student.student_id }}" aria-expanded="false" aria-controls="collapse_{{ student.student_id }}">
+                    <h5>Student: {{ response.username }} (ID: {{ response.student_id }})</h5>
+                    <button class="btn btn-info" type="button" data-toggle="collapse" data-target="#collapse_{{ response.student_id }}" aria-expanded="false" aria-controls="collapse_{{ response.student_id }}">
                         View Responses
                     </button>
                 </div>
@@ -17,15 +17,10 @@
                     <a href="/test/{{ test.id }}/grade" class="btn btn-primary">Grade Test</a>
                 </div>
             </div>
-            <div class="collapse" id="collapse_{{ student.student_id }}">
+            <div class="collapse" id="collapse_{{ response.student_id }}">
                 <div class="card card-body mt-3">
-                    {% for response in student.responses %}
-                    <div>
-                        <p><strong>Question ID:</strong> {{ response.question_id }}</p>
-                        <p><strong>Answer:</strong> {{ response.answer_text }}</p>
-                    </div>
-                    <hr>
-                    {% endfor %}
+                    <p>Question ID: {{ response.question_id }}</p>
+                    <p>Answer: {{ response.answer_text }}</p>
                 </div>
             </div>
         </li>
