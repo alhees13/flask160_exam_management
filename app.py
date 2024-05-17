@@ -15,6 +15,24 @@ db = SQL ( "sqlite:///school.db" )
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
+<<<<<<< HEAD
+
+class User(UserMixin):
+    def __init__(self, id, username, password, role):
+        self.id = id
+        self.username = username
+        self.password = password
+        self.role = role
+
+@login_manager.user_loader
+def load_user(user_id):
+    user = db.execute("SELECT * FROM User WHERE id = ?", user_id)
+    if user:
+        return User(id=user[0]['id'], username=user[0]['username'], password=user[0]['password'], role=user[0]['role'])
+    return None
+
+=======
+>>>>>>> 5f26f9acb97afded3f5b845094aa5b048e7f61d6
 
 class User(UserMixin):
     def __init__(self, id, username, password, role):
@@ -31,7 +49,7 @@ def load_user(user_id):
     return None
 
 
-# Routes
+# Routesss
 @app.route('/')
 def home():
     return render_template('index.html')
