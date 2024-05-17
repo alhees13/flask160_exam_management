@@ -115,6 +115,19 @@ def delete_question(question_id):
     flash('Question deleted successfully!', 'success')
     return redirect(url_for('manage_questions', test_id=test['id']))
 
+@app.route('/delete_test/<int:test_id>', methods=['POST'])
+@login_required
+def delete_test(test_id):
+    test = db.execute("SELECT * FROM Test WHERE id = ?", test_id)[0]
+    if current_user.role != 'teacher' or current_user.id != test['teacher_id']:
+        flash('Only the teacher who created the test can delete it.', 'danger')
+        return redirect(url_for('home'))
+    db.execute("DELETE FROM Question WHERE test_id = ?", test_id)  # Delete all questions related to the test
+    db.execute("DELETE FROM Test WHERE id = ?", test_id)
+    flash('Test deleted successfully!', 'success')
+    return redirect(url_for('manage_tests'))
+
+
 
 @app.route('/tests', methods=['GET'])
 @login_required
