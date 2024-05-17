@@ -3,6 +3,14 @@
 {% block content %}
 <div class="container mt-4">
     <h2>Take Test</h2>
-    <p>Here you will see the available tests to take.</p>
+    <ul class="list-group">
+        {% for test in tests %}
+        <li class="list-group-item">
+            <h5>{{ test.test_name }}</h5>
+            <p>{{ test.test_description }}</p>
+            <a href="/test/{{ test.id }}/take" class="btn btn-primary">Take Test</a>
+        </li>
+        {% endfor %}
+    </ul>
 </div>
 {% endblock %}

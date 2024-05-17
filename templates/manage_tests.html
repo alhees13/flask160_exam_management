@@ -9,7 +9,9 @@
             <h5>{{ test.test_name }}</h5>
             <p>{{ test.test_description }}</p>
             <a href="/edit_test/{{ test.id }}" class="btn btn-secondary">Edit</a>
-            <a href="/delete_test/{{ test.id }}" class="btn btn-danger">Delete</a>
+            <form action="/delete_test/{{ test.id }}" method="post" style="display: inline;">
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
             <a href="/test/{{ test.id }}/questions" class="btn btn-primary">Manage Questions</a>
         </li>
         {% endfor %}
