@@ -52,6 +52,19 @@ def load_user(user_id):
 def home():
     return render_template('index.html')
 
+
+@app.route('/accounts')
+@login_required
+def accounts():
+    if current_user.role != 'admin':
+        flash('Only admins can view this page.', 'danger')
+        return redirect(url_for('home'))
+
+    accounts = db.execute("SELECT id, username, role FROM User")
+    return render_template('accounts.html', accounts=accounts)
+
+
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
