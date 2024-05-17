@@ -127,6 +127,11 @@ def delete_test(test_id):
     flash('Test deleted successfully!', 'success')
     return redirect(url_for('manage_tests'))
 
+@app.route('/tests', methods=['GET'])
+@login_required
+def get_tests():
+    tests = db.execute("SELECT * FROM Test")
+    return jsonify(tests)
 
 
 @app.route('/tests', methods=['GET'])
