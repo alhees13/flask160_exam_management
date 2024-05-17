@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Test: {{ test.test_name }}</h2>
+    <form action="/test/{{ test.id }}/take" method="post">
+        {% for question in questions %}
+        <div class="form-group">
+            <label for="question_{{ question.id }}">{{ question.question_text }}</label>
+            <textarea class="form-control" id="question_{{ question.id }}" name="question_{{ question.id }}" rows="3" required></textarea>
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">Submit Answers</button>
+    </form>
+</div>
+{% endblock %}

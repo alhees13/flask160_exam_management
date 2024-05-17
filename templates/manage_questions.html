@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container mt-4">
     <h2>Manage Questions for {{ test.test_name }}</h2>
-    <form action="/test/{{ test.id }}/add_question" method="post">
+    <form action="/test/{{ test.id }}/questions" method="post">
         <div class="form-group">
             <label for="question_text">Question Text</label>
             <input type="text" class="form-control" id="question_text" name="question_text" required>
@@ -15,7 +15,9 @@
         {% for question in questions %}
         <li class="list-group-item">
             <p>{{ question.question_text }}</p>
-            <a href="/delete_question/{{ question.id }}" class="btn btn-danger">Delete</a>
+            <form action="/delete_question/{{ question.id }}" method="post" style="display: inline;">
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
         </li>
         {% endfor %}
     </ul>

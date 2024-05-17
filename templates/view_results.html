@@ -3,6 +3,14 @@
 {% block content %}
 <div class="container mt-4">
     <h2>View Results</h2>
-    <p>Here you will see the test results.</p>
+    <ul class="list-group">
+        {% for result in results %}
+        <li class="list-group-item">
+            <h5>Test ID: {{ result.test_id }}</h5>
+            <p>Question ID: {{ result.question_id }}</p>
+            <p>Answer: {{ result.answer_text }}</p>
+        </li>
+        {% endfor %}
+    </ul>
 </div>
 {% endblock %}

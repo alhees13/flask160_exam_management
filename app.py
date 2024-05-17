@@ -93,6 +93,33 @@ def create_test():
         return redirect(url_for('manage_tests'))
     return render_template('create_test.html')
 
+@app.route('/edit_test/<int:test_id>', methods=['GET', 'POST'])
+@login_required
+def edit_test(test_id):
+    test = db.execute("SELECT * FROM Test WHERE id = ?", test_id)[0]
+    if request.method == 'POST':
+        if current_user.role != 'teacher' or current_user.id != test['teacher_id']:
+            flash('Only the teacher who created the test can edit it.', 'danger')
+            return redirect(url_for('home'))
+        test_name = request.form['test_name']
+        test_description = request.form['test_description']
+        db.execute("UPDATE Test SET test_name = ?, test_description = ? WHERE id = ?",
+                   test_name, test_description, test_id)
+        flash('Test updated successfully!', 'success')
+        return redirect(url_for('manage_tests'))
+    return render_template('edit_test.html', test=test)
+
+@app.route('/delete_test/<int:test_id>', methods=['POST'])
+@login_required
+def delete_test(test_id):
+    test = db.execute("SELECT * FROM Test WHERE id = ?", test_id)[0]
+    if current_user.role != 'teacher' or current_user.id != test['teacher_id']:
+        flash('Only the teacher who created the test can delete it.', 'danger')
+        return redirect(url_for('home'))
+    db.execute("DELETE FROM Test WHERE id = ?", test_id)
+    flash('Test deleted successfully!', 'success')
+    return redirect(url_for('manage_tests'))
+
 @app.route('/manage_tests')
 @login_required
 def manage_tests():
@@ -127,14 +154,31 @@ def delete_question(question_id):
     flash('Question deleted successfully!', 'success')
     return redirect(url_for('manage_questions', test_id=test['id']))
 
-
 @app.route('/take_test')
 @login_required
 def take_test():
     if current_user.role != 'student':
         flash('Only students can take tests.', 'danger')
         return redirect(url_for('home'))
-    return render_template('take_test.html')
+    tests = db.execute("SELECT * FROM Test")
+    return render_template('take_test.html', tests=tests)
+
+@app.route('/test/<int:test_id>/take', methods=['GET', 'POST'])
+@login_required
+def take_specific_test(test_id):
+    if current_user.role != 'student':
+        flash('Only students can take tests.', 'danger')
+        return redirect(url_for('home'))
+    test = db.execute("SELECT * FROM Test WHERE id = ?", test_id)[0]
+    questions = db.execute("SELECT * FROM Question WHERE test_id = ?", test_id)
+    if request.method == 'POST':
+        for question in questions:
+            answer_text = request.form.get(f'question_{question["id"]}')
+            db.execute("INSERT INTO Answer (student_id, test_id, question_id, answer_text) VALUES (?, ?, ?, ?)",
+                       current_user.id, test_id, question['id'], answer_text)
+        flash('Test submitted successfully!', 'success')
+        return redirect(url_for('take_test'))
+    return render_template('take_specific_test.html', test=test, questions=questions)
 
 @app.route('/view_results')
 @login_required
@@ -142,12 +186,8 @@ def view_results():
     if current_user.role != 'student':
         flash('Only students can view results.', 'danger')
         return redirect(url_for('home'))
-    return render_template('view_results.html')
-
-
-
-
-
+    results = db.execute("SELECT * FROM Answer WHERE student_id = ?", current_user.id)
+    return render_template('view_results.html', results=results)
 
 
 @app.route('/logout')
