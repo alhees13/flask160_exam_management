@@ -126,22 +126,16 @@ def edit_test(test_id):
         return redirect(url_for('manage_tests'))
     return render_template('edit_test.html', test=test)
 
-@app.route('/test/<int:test_id>/delete', methods=['POST'])
+@app.route('/delete_test/<int:test_id>', methods=['POST'])
 @login_required
 def delete_test(test_id):
-    if current_user.role != 'teacher':
-        flash('Only teachers can delete tests.', 'danger')
+    test = db.execute("SELECT * FROM Test WHERE id = ?", test_id)[0]
+    if current_user.role != 'teacher' or current_user.id != test['teacher_id']:
+        flash('Only the teacher who created the test can delete it.', 'danger')
         return redirect(url_for('home'))
-
-    # Manually delete related rows
-    db.execute("DELETE FROM Answer WHERE test_id = ?", test_id)
-    db.execute("DELETE FROM Grade WHERE test_id = ?", test_id)
     db.execute("DELETE FROM Test WHERE id = ?", test_id)
-    
     flash('Test deleted successfully!', 'success')
     return redirect(url_for('manage_tests'))
-
-
 
 @app.route('/manage_tests')
 @login_required
