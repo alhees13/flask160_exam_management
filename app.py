@@ -15,11 +15,6 @@ Session(app)
 db = SQL ( "sqlite:///school.db" )
 
 
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
-
 # Routes
 @app.route('/')
 def home():
