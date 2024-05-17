@@ -207,12 +207,18 @@ def view_test_responses(test_id):
     if current_user.role != 'teacher':
         flash('Only teachers can view test responses.', 'danger')
         return redirect(url_for('home'))
+    
     test = db.execute("SELECT * FROM Test WHERE id = ?", test_id)[0]
-    responses = db.execute("SELECT Answer.student_id, Answer.question_id, Answer.answer_text, User.username "
-                           "FROM Answer "
-                           "LEFT JOIN User ON Answer.student_id = User.id "
-                           "WHERE Answer.test_id = ?", test_id)
-    return render_template('view_test_responses.html', test=test, responses=responses)
+    
+    # Fetching all students who took the test along with their responses
+    students = db.execute("SELECT DISTINCT Answer.student_id, User.username FROM Answer LEFT JOIN User ON Answer.student_id = User.id WHERE Answer.test_id = ?", test_id)
+    
+    # For each student, fetch their responses
+    for student in students:
+        responses = db.execute("SELECT Answer.question_id, Answer.answer_text FROM Answer WHERE Answer.student_id = ? AND Answer.test_id = ?", student["student_id"], test_id)
+        student["responses"] = responses
+
+    return render_template('view_test_responses.html', test=test, students=students)
 
 @app.route('/test/<int:test_id>/grade', methods=['GET', 'POST'])
 @login_required
