@@ -24,11 +24,9 @@ def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        role = 'student'  # Default role is student, can be extended for teacher role
+        role = request.form['role']  # Get role from form
         hashed_password = generate_password_hash(password, method='sha256')
-        new_user = User(username=username, password=hashed_password, role=role)
-        db.session.add(new_user)
-        db.session.commit()
+        db.execute("INSERT INTO User (username, password, role) VALUES (?, ?, ?)", username, hashed_password, role)
         flash('Registration successful!', 'success')
         return redirect(url_for('login'))
     return render_template('register.html')
@@ -38,9 +36,9 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        user = User.query.filter_by(username=username).first()
-        if user and check_password_hash(user.password, password):
-            login_user(user)
+        user = db.execute("SELECT * FROM User WHERE username = ?", username)
+        if user and check_password_hash(user[0]['password'], password):
+            login_user(User(id=user[0]['id'], username=user[0]['username'], password=user[0]['password'], role=user[0]['role']))
             return redirect(url_for('home'))
         flash('Login unsuccessful. Please check your username and password.', 'danger')
     return render_template('login.html')
