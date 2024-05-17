@@ -15,7 +15,7 @@ db = SQL ( "sqlite:///school.db" )
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
-<<<<<<< HEAD
+
 
 class User(UserMixin):
     def __init__(self, id, username, password, role):
