@@ -90,6 +90,8 @@ def login():
                 return redirect(url_for('manage_tests'))
             elif user[0]['role'] == 'student':
                 return redirect(url_for('take_test'))
+            elif user[0]['role'] == 'admin':
+                return redirect(url_for('accounts'))
         flash('Login unsuccessful. Please check your username and password.', 'danger')
     return render_template('login.html')
 
