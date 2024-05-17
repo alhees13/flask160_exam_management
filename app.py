@@ -220,6 +220,7 @@ def view_test_responses(test_id):
 
     return render_template('view_test_responses.html', test=test, students=students)
 
+
 @app.route('/test/<int:test_id>/grade', methods=['GET', 'POST'])
 @login_required
 def grade_test(test_id):
