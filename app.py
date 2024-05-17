@@ -14,6 +14,25 @@ Session(app)
 
 db = SQL ( "sqlite:///school.db" )
 
+from werkzeug.security import generate_password_hash
+from cs50 import SQL
+
+db = SQL("sqlite:///school.db")
+
+admin_username = "admin"
+admin_password = generate_password_hash("password123", method='pbkdf2:sha256', salt_length=8)
+admin_role = "admin"
+
+# Check if admin user already exists
+existing_admin = db.execute("SELECT * FROM User WHERE username = ?", admin_username)
+if not existing_admin:
+    db.execute("INSERT INTO User (username, password, role) VALUES (?, ?, ?)", admin_username, admin_password, admin_role)
+    print("Admin user created successfully!")
+else:
+    print("Admin user already exists.")
+
+
+
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
