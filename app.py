@@ -220,6 +220,19 @@ def view_test_responses(test_id):
 
     return render_template('view_test_responses.html', test=test, students=students)
 
+@app.route('/test/<int:test_id>/responses/<int:student_id>')
+@login_required
+def view_individual_response(test_id, student_id):
+    if current_user.role != 'teacher':
+        flash('Only teachers can view test responses.', 'danger')
+        return redirect(url_for('home'))
+
+    test = db.execute("SELECT * FROM Test WHERE id = ?", test_id)[0]
+    student = db.execute("SELECT username FROM User WHERE id = ?", student_id)[0]
+    responses = db.execute("SELECT Answer.question_id, Answer.answer_text FROM Answer WHERE Answer.student_id = ? AND Answer.test_id = ?", student_id, test_id)
+
+    return render_template('view_individual_response.html', test=test, student=student, responses=responses)
+
 
 
 
