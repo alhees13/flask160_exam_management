@@ -60,6 +60,61 @@ def login():
         flash('Login unsuccessful. Please check your username and password.', 'danger')
     return render_template('login.html')
 
+@app.route('/create_test', methods=['GET', 'POST'])
+@login_required
+def create_test():
+    if request.method == 'POST':
+        if current_user.role != 'teacher':
+            flash('Only teachers can create tests.', 'danger')
+            return redirect(url_for('home'))
+        test_name = request.form['test_name']
+        test_description = request.form['test_description']
+        db.execute("INSERT INTO Test (teacher_id, test_name, test_description) VALUES (?, ?, ?)",
+                   current_user.id, test_name, test_description)
+        flash('Test created successfully!', 'success')
+        return redirect(url_for('manage_tests'))
+    return render_template('create_test.html')
+
+@app.route('/manage_tests')
+@login_required
+def manage_tests():
+    tests = db.execute("SELECT * FROM Test WHERE teacher_id = ?", current_user.id)
+    return render_template('manage_tests.html', tests=tests)
+
+@app.route('/test/<int:test_id>/questions', methods=['GET', 'POST'])
+@login_required
+def manage_questions(test_id):
+    test = db.execute("SELECT * FROM Test WHERE id = ?", test_id)[0]
+    questions = db.execute("SELECT * FROM Question WHERE test_id = ?", test_id)
+    if request.method == 'POST':
+        if current_user.role != 'teacher':
+            flash('Only the teacher who created the test can add questions.', 'danger')
+            return redirect(url_for('home'))
+        question_text = request.form['question_text']
+        db.execute("INSERT INTO Question (test_id, question_text, question_type) VALUES (?, ?, 'open-ended')",
+                   test_id, question_text)
+        flash('Question added successfully!', 'success')
+        return redirect(url_for('manage_questions', test_id=test_id))
+    return render_template('manage_questions.html', test=test, questions=questions)
+
+@app.route('/delete_question/<int:question_id>', methods=['POST'])
+@login_required
+def delete_question(question_id):
+    question = db.execute("SELECT * FROM Question WHERE id = ?", question_id)[0]
+    test = db.execute("SELECT * FROM Test WHERE id = ?", question['test_id'])[0]
+    if current_user.role != 'teacher' or current_user.id != test['teacher_id']:
+        flash('Only the teacher who created the test can delete questions.', 'danger')
+        return redirect(url_for('home'))
+    db.execute("DELETE FROM Question WHERE id = ?", question_id)
+    flash('Question deleted successfully!', 'success')
+    return redirect(url_for('manage_questions', test_id=test['id']))
+
+
+
+
+
+
+
 @app.route('/logout')
 @login_required
 def logout():

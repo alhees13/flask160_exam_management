@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Manage Questions for {{ test.test_name }}</h2>
+    <form action="/test/{{ test.id }}/add_question" method="post">
+        <div class="form-group">
+            <label for="question_text">Question Text</label>
+            <input type="text" class="form-control" id="question_text" name="question_text" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Question</button>
+    </form>
+    <h3 class="mt-4">Existing Questions</h3>
+    <ul class="list-group">
+        {% for question in questions %}
+        <li class="list-group-item">
+            <p>{{ question.question_text }}</p>
+            <a href="/delete_question/{{ question.id }}" class="btn btn-danger">Delete</a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
