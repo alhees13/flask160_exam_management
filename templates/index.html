@@ -1,32 +1,23 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Welcome to the Online Exam Management Platform</h1>
-<p>This platform allows teachers to create and manage exams, and students to take exams and view their results.</p>
-
-<div class="row">
-    <div class="col-md-4">
-        <h2>Features for Teachers</h2>
-        <ul>
-            <li>Create and manage tests</li>
-            <li>Add and edit questions</li>
-            <li>Grade student submissions</li>
-        </ul>
-    </div>
-    <div class="col-md-4">
-        <h2>Features for Students</h2>
-        <ul>
-            <li>Register and log in to the platform</li>
-            <li>Take available tests</li>
-            <li>View test results and grades</li>
-        </ul>
-    </div>
-    <div class="col-md-4">
-        <h2>Get Started</h2>
-        <ul>
-            <li><a href="/register">Register</a> as a new user</li>
-            <li><a href="/login">Log in</a> to your account</li>
-        </ul>
-    </div>
+<div class="jumbotron text-center mt-4">
+    <h1 class="display-4">Welcome to the Online Exam Management Platform</h1>
+    <p class="lead">An easy way to manage and take tests online</p>
+    <hr class="my-4">
+    <p class="lead">
+        {% if current_user.is_authenticated %}
+            {% if current_user.role == 'teacher' %}
+                <a class="btn btn-primary btn-lg mr-2" href="/create_test" role="button">Create Test</a>
+                <a class="btn btn-secondary btn-lg" href="/manage_tests" role="button">Manage Tests</a>
+            {% elif current_user.role == 'student' %}
+                <a class="btn btn-primary btn-lg mr-2" href="/take_test" role="button">Take Test</a>
+                <a class="btn btn-secondary btn-lg" href="/view_results" role="button">View Results</a>
+            {% endif %}
+        {% else %}
+            <a class="btn btn-primary btn-lg mr-2" href="/register" role="button">Register</a>
+            <a class="btn btn-secondary btn-lg" href="/login" role="button">Login</a>
+        {% endif %}
+    </p>
 </div>
 {% endblock %}
