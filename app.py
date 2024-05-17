@@ -31,9 +31,6 @@ def load_user(user_id):
         return User(id=user[0]['id'], username=user[0]['username'], password=user[0]['password'], role=user[0]['role'])
     return None
 
-=======
->>>>>>> 5f26f9acb97afded3f5b845094aa5b048e7f61d6
-
 class User(UserMixin):
     def __init__(self, id, username, password, role):
         self.id = id
