@@ -11,7 +11,7 @@
         </li>
         {% endfor %}
         <li class="list-group-item">
-            <p><strong>Grade:</strong> {{ grades[0]['grade'] if grades else 'Not graded yet' }}</p>
+            <p><strong>Grade:</strong> {{ grade }}</p>
         </li>
     </ul>
     <a href="{{ url_for('view_test_details', test_id=test.id) }}" class="btn btn-secondary mt-4">Back to Test Details</a>

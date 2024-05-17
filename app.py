@@ -245,7 +245,7 @@ def view_individual_details(test_id, student_id):
     responses = db.execute("SELECT Answer.question_id, Answer.answer_text FROM Answer WHERE Answer.student_id = ? AND Answer.test_id = ?", student_id, test_id)
     grades = db.execute("SELECT grade FROM Grade WHERE student_id = ? AND test_id = ?", student_id, test_id)
 
-    return render_template('view_individual_details.html', test=test, student=student, responses=responses, grades=grades)
+    return render_template('view_individual_details.html', test=test, student=student, responses=responses, grade=grades[0]['grade'] if grades else 'Not graded yet')
 
 
 
@@ -288,16 +288,14 @@ def view_all_tests():
 @app.route('/test/<int:test_id>/details')
 @login_required
 def view_test_details(test_id):
-    test = db.execute("SELECT Test.id, Test.test_name, Test.test_description, User.username AS teacher_name "
-                      "FROM Test "
-                      "LEFT JOIN User ON Test.teacher_id = User.id "
-                      "WHERE Test.id = ?", test_id)[0]
-    students = db.execute("SELECT Answer.student_id, User.username AS student_name, Grade.grade, Grader.username AS grader_name "
-                          "FROM Answer "
-                          "LEFT JOIN User ON Answer.student_id = User.id "
-                          "LEFT JOIN Grade ON Answer.student_id = Grade.student_id AND Answer.test_id = Grade.test_id "
-                          "LEFT JOIN User AS Grader ON Grade.graded_by = Grader.id "
-                          "WHERE Answer.test_id = ?", test_id)
+    test = db.execute("SELECT Test.id, Test.test_name, Test.test_description, User.username AS teacher_name FROM Test LEFT JOIN User ON Test.teacher_id = User.id WHERE Test.id = ?", test_id)[0]
+    students = db.execute("SELECT DISTINCT Answer.student_id, User.username AS student_name FROM Answer LEFT JOIN User ON Answer.student_id = User.id WHERE Answer.test_id = ?", test_id)
+
+    for student in students:
+        grades = db.execute("SELECT grade, User.username AS grader_name FROM Grade LEFT JOIN User ON Grade.graded_by = User.id WHERE Grade.student_id = ? AND Grade.test_id = ?", student['student_id'], test_id)
+        student['grade'] = grades[0]['grade'] if grades else 'Not graded yet'
+        student['grader_name'] = grades[0]['grader_name'] if grades else 'Not graded yet'
+
     return render_template('view_test_details.html', test=test, students=students)
 
 
