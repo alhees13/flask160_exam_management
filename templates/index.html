@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Welcome to the Online Exam Management Platform</h1>
+<p>This platform allows teachers to create and manage exams, and students to take exams and view their results.</p>
+
+<div class="row">
+    <div class="col-md-4">
+        <h2>Features for Teachers</h2>
+        <ul>
+            <li>Create and manage tests</li>
+            <li>Add and edit questions</li>
+            <li>Grade student submissions</li>
+        </ul>
+    </div>
+    <div class="col-md-4">
+        <h2>Features for Students</h2>
+        <ul>
+            <li>Register and log in to the platform</li>
+            <li>Take available tests</li>
+            <li>View test results and grades</li>
+        </ul>
+    </div>
+    <div class="col-md-4">
+        <h2>Get Started</h2>
+        <ul>
+            <li><a href="/register">Register</a> as a new user</li>
+            <li><a href="/login">Log in</a> to your account</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
