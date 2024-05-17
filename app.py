@@ -1,55 +1,20 @@
+from flask_session import Session
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
+from cs50 import SQL
+
 
 app = Flask(__name__)
 
-# Root route
-app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your_secret_key'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
 
-db = SQLAlchemy(app)
-login_manager = LoginManager(app)
-login_manager.login_view = 'login'
+db = SQL ( "sqlite:///school.db" )
 
-# Models
-class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(150), unique=True, nullable=False)
-    password = db.Column(db.String(150), nullable=False)
-    role = db.Column(db.String(50), nullable=False)
 
-class Test(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    teacher_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    test_name = db.Column(db.String(150), nullable=False)
-    test_description = db.Column(db.String(300))
-    is_timed = db.Column(db.Boolean, default=False)
-    duration = db.Column(db.Integer, default=0)
-
-class Question(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    test_id = db.Column(db.Integer, db.ForeignKey('test.id'), nullable=False)
-    question_text = db.Column(db.Text, nullable=False)
-    question_type = db.Column(db.String(50), nullable=False)
-
-class Answer(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    student_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    test_id = db.Column(db.Integer, db.ForeignKey('test.id'), nullable=False)
-    question_id = db.Column(db.Integer, db.ForeignKey('question.id'), nullable=False)
-    answer_text = db.Column(db.Text, nullable=False)
-    submission_time = db.Column(db.DateTime, nullable=False)
-
-class Grade(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    student_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    test_id = db.Column(db.Integer, db.ForeignKey('test.id'), nullable=False)
-    grade = db.Column(db.Float, nullable=False)
-    graded_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 @login_manager.user_loader
 def load_user(user_id):
