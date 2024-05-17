@@ -49,7 +49,7 @@ def load_user(user_id):
     return None
 
 
-# Routesss
+# Routesssss
 @app.route('/')
 def home():
     return render_template('index.html')
