@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>All Tests</h2>
+    <ul class="list-group">
+        {% for test in tests %}
+        <li class="list-group-item">
+            <h5>{{ test.test_name }}</h5>
+            <p>Created by: {{ test.teacher_name }}</p>
+            <p>Number of Students: {{ test.student_count }}</p>
+            <a href="/test/{{ test.id }}/details" class="btn btn-primary">View Details</a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

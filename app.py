@@ -169,6 +169,12 @@ def take_specific_test(test_id):
     if current_user.role != 'student':
         flash('Only students can take tests.', 'danger')
         return redirect(url_for('home'))
+    # Check if the student has already taken the test
+    existing_answers = db.execute("SELECT * FROM Answer WHERE student_id = ? AND test_id = ?", current_user.id, test_id)
+    if existing_answers:
+        flash('You have already taken this test.', 'danger')
+        return redirect(url_for('take_test'))
+    
     test = db.execute("SELECT * FROM Test WHERE id = ?", test_id)[0]
     questions = db.execute("SELECT * FROM Question WHERE test_id = ?", test_id)
     if request.method == 'POST':
@@ -188,6 +194,51 @@ def view_results():
         return redirect(url_for('home'))
     results = db.execute("SELECT * FROM Answer WHERE student_id = ?", current_user.id)
     return render_template('view_results.html', results=results)
+
+@app.route('/test/<int:test_id>/responses')
+@login_required
+def view_test_responses(test_id):
+    if current_user.role != 'teacher':
+        flash('Only teachers can view test responses.', 'danger')
+        return redirect(url_for('home'))
+    test = db.execute("SELECT * FROM Test WHERE id = ?", test_id)[0]
+    responses = db.execute("SELECT * FROM Answer WHERE test_id = ?", test_id)
+    return render_template('view_test_responses.html', test=test, responses=responses)
+
+@app.route('/test/<int:test_id>/grade', methods=['GET', 'POST'])
+@login_required
+def grade_test(test_id):
+    if current_user.role != 'teacher':
+        flash('Only teachers can grade tests.', 'danger')
+        return redirect(url_for('home'))
+    test = db.execute("SELECT * FROM Test WHERE id = ?", test_id)[0]
+    students = db.execute("SELECT DISTINCT student_id FROM Answer WHERE test_id = ?", test_id)
+    if request.method == 'POST':
+        for student in students:
+            grade = request.form.get(f'grade_{student["student_id"]}')
+            existing_grade = db.execute("SELECT * FROM Grade WHERE test_id = ? AND student_id = ?", test_id, student['student_id'])
+            if existing_grade:
+                db.execute("UPDATE Grade SET grade = ? WHERE test_id = ? AND student_id = ?",
+                           grade, test_id, student['student_id'])
+            else:
+                db.execute("INSERT INTO Grade (student_id, test_id, grade, graded_by) VALUES (?, ?, ?, ?)",
+                           student['student_id'], test_id, grade, current_user.id)
+        flash('Grades saved successfully!', 'success')
+        return redirect(url_for('view_test_responses', test_id=test_id))
+    return render_template('grade_test.html', test=test, students=students)
+
+@app.route('/tests')
+@login_required
+def view_all_tests():
+    tests = db.execute("SELECT Test.id, Test.test_name, Test.test_description, User.username AS teacher_name, COUNT(DISTINCT Answer.student_id) AS student_count FROM Test LEFT JOIN User ON Test.teacher_id = User.id LEFT JOIN Answer ON Test.id = Answer.test_id GROUP BY Test.id")
+    return render_template('view_all_tests.html', tests=tests)
+
+@app.route('/test/<int:test_id>/details')
+@login_required
+def view_test_details(test_id):
+    test = db.execute("SELECT Test.id, Test.test_name, Test.test_description, User.username AS teacher_name FROM Test LEFT JOIN User ON Test.teacher_id = User.id WHERE Test.id = ?", test_id)[0]
+    students = db.execute("SELECT Answer.student_id, User.username AS student_name, Grade.grade, Grader.username AS grader_name FROM Answer LEFT JOIN User ON Answer.student_id = User.id LEFT JOIN Grade ON Answer.student_id = Grade.student_id AND Answer.test_id = Grade.test_id LEFT JOIN User AS Grader ON Grade.graded_by = Grader.id WHERE Answer.test_id = ?", test_id)
+    return render_template('view_test_details.html', test=test, students=students)
 
 
 @app.route('/logout')

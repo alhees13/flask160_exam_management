@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Grade Test: {{ test.test_name }}</h2>
+    <form action="/test/{{ test.id }}/grade" method="post">
+        {% for student in students %}
+        <div class="form-group">
+            <label for="grade_{{ student.student_id }}">Grade for Student ID: {{ student.student_id }}</label>
+            <input type="number" class="form-control" id="grade_{{ student.student_id }}" name="grade_{{ student.student_id }}" required>
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">Save Grades</button>
+    </form>
+</div>
+{% endblock %}

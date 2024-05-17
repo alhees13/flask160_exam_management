@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Responses for {{ test.test_name }}</h2>
+    <ul class="list-group">
+        {% for response in responses %}
+        <li class="list-group-item">
+            <h5>Student ID: {{ response.student_id }}</h5>
+            <p>Question ID: {{ response.question_id }}</p>
+            <p>Answer: {{ response.answer_text }}</p>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
