@@ -192,14 +192,25 @@ def take_specific_test(test_id):
 @login_required
 def view_results():
     if current_user.role != 'student':
-        flash('Only students can view results.', 'danger')
+        flash('Only students can view their results.', 'danger')
         return redirect(url_for('home'))
-    results = db.execute("SELECT Test.test_name, Answer.question_id, Answer.answer_text, Grade.grade "
-                         "FROM Answer "
-                         "LEFT JOIN Test ON Answer.test_id = Test.id "
-                         "LEFT JOIN Grade ON Answer.test_id = Grade.test_id AND Answer.student_id = Grade.student_id "
-                         "WHERE Answer.student_id = ?", current_user.id)
-    return render_template('view_results.html', results=results)
+
+    tests = db.execute("SELECT DISTINCT Test.id, Test.test_name FROM Answer LEFT JOIN Test ON Answer.test_id = Test.id WHERE Answer.student_id = ?", current_user.id)
+
+    return render_template('view_results.html', tests=tests)
+
+@app.route('/view_results/<int:test_id>')
+@login_required
+def view_individual_result(test_id):
+    if current_user.role != 'student':
+        flash('Only students can view their results.', 'danger')
+        return redirect(url_for('home'))
+
+    test = db.execute("SELECT * FROM Test WHERE id = ?", test_id)[0]
+    responses = db.execute("SELECT Answer.question_id, Answer.answer_text FROM Answer WHERE Answer.student_id = ? AND Answer.test_id = ?", current_user.id, test_id)
+    grade = db.execute("SELECT grade FROM Grade WHERE student_id = ? AND test_id = ?", current_user.id, test_id)
+
+    return render_template('view_individual_result.html', test=test, responses=responses, grade=grade[0]['grade'] if grade else 'Not graded yet')
 
 @app.route('/test/<int:test_id>/responses')
 @login_required
