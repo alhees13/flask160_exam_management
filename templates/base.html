@@ -15,15 +15,33 @@
                 <li class="nav-item">
                     <a class="nav-link" href="/">Home</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/register">Register</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/login">Login</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/logout">Logout</a>
-                </li>
+                {% if current_user.is_authenticated %}
+                    {% if current_user.role == 'teacher' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="/create_test">Create Test</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/manage_tests">Manage Tests</a>
+                        </li>
+                    {% elif current_user.role == 'student' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="/take_test">Take Test</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/view_results">View Results</a>
+                        </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout">Logout</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/register">Register</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/login">Login</a>
+                    </li>
+                {% endif %}
             </ul>
         </div>
     </nav>

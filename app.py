@@ -71,7 +71,10 @@ def login():
         user = db.execute("SELECT * FROM User WHERE username = ?", username)
         if user and check_password_hash(user[0]['password'], password):
             login_user(User(id=user[0]['id'], username=user[0]['username'], password=user[0]['password'], role=user[0]['role']))
-            return redirect(url_for('home'))
+            if user[0]['role'] == 'teacher':
+                return redirect(url_for('manage_tests'))
+            elif user[0]['role'] == 'student':
+                return redirect(url_for('take_test'))
         flash('Login unsuccessful. Please check your username and password.', 'danger')
     return render_template('login.html')
 
@@ -123,6 +126,23 @@ def delete_question(question_id):
     db.execute("DELETE FROM Question WHERE id = ?", question_id)
     flash('Question deleted successfully!', 'success')
     return redirect(url_for('manage_questions', test_id=test['id']))
+
+
+@app.route('/take_test')
+@login_required
+def take_test():
+    if current_user.role != 'student':
+        flash('Only students can take tests.', 'danger')
+        return redirect(url_for('home'))
+    return render_template('take_test.html')
+
+@app.route('/view_results')
+@login_required
+def view_results():
+    if current_user.role != 'student':
+        flash('Only students can view results.', 'danger')
+        return redirect(url_for('home'))
+    return render_template('view_results.html')
 
 
 
